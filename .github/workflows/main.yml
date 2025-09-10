@@ -38,7 +38,7 @@ jobs:
       - name: Restaurando a aplicação
         run: |
                ssh -i /tmp/private_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ secrets.HOST }} \
-               sudo npm install --prefix /home/ubuntu/apps \
+               sudo apt -y install python3-venv python3-pip --prefix /home/ubuntu/apps \
 
       - name: Reiniciando o serviço da aplicação
         run: |
