@@ -1,6 +1,5 @@
 name: Publicação automática
 on:  
-  # O script será executado sempre que houver push ou pull request nas branches destacadas
   push:
     branches: [ "main" ]
   pull_request:
@@ -28,6 +27,12 @@ jobs:
           ssh -i /tmp/private_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ secrets.HOST }} \
             "sudo chown -R ubuntu:ubuntu /home/ubuntu/apps && sudo chmod -R 755 /home/ubuntu/apps"
 
+      # Backup da aplicação atual antes de substituir
+      - name: Backup da aplicação atual
+        run: |
+          ssh -i /tmp/private_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ secrets.HOST }} \
+            "cd /home/ubuntu/apps && tar -czf /home/ubuntu/apps/helloflask_backup_$(date +'%Y%m%d%H%M%S').tar.gz helloflask"
+
       - name: Transferindo os arquivos da aplicação
         run: |
           scp -i /tmp/private_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r ${{ github.workspace }}/* \
@@ -52,9 +57,20 @@ jobs:
         run: |
           rm /tmp/private_key
 
-      - name: Discord notification
+      # Notificação de sucesso (já configurada)
+      - name: Notificação de sucesso para Discord
+        if: success()
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
           args: '🚀 Deploy concluído e aplicação reiniciada com sucesso! ✅\n\nAutor do push: **${{ github.actor }}**'
+
+      # Notificação de erro para Discord
+      - name: Notificação de falha para Discord
+        if: failure()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: '❌ O deploy falhou! 😞\n\nAutor do push: **${{ github.actor }}**'
