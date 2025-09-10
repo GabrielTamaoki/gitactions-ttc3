@@ -24,7 +24,7 @@ jobs:
 
       - name: Ajustar permissões no servidor de Produção
         run: |
-          sshx -i /tmp/private_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ secrets.HOST }} \
+          ssh -i /tmp/private_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ secrets.HOST }} \
             "sudo chown -R ubuntu:ubuntu /home/ubuntu/apps && sudo chmod -R 755 /home/ubuntu/apps"
 
       # Backup da aplicação atual antes de substituir
